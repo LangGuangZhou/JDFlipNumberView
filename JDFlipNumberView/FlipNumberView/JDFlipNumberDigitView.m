@@ -13,16 +13,16 @@
 #import "JDFlipNumberViewImageBundle.h"
 #import "JDFlipNumberViewImageCache.h"
 #import "JDFlipNumberViewImageSet.h"
+#import "CALayer+HalfLayer.h"
 
 static NSString *const kFlipAnimationKey = @"kFlipAnimationKey";
 static CGFloat kFlipAnimationMinimumAnimationDuration = 0.05;
 static CGFloat kFlipAnimationMaximumAnimationDuration = 0.70;
 
 typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
-	JDFlipAnimationStateFirstHalf,
-	JDFlipAnimationStateSecondHalf
+    JDFlipAnimationStateFirstHalf,
+    JDFlipAnimationStateSecondHalf
 };
-
 
 @interface JDFlipNumberDigitView () <CAAnimationDelegate>
 
@@ -35,14 +35,94 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
 @property (nonatomic, copy) JDDigitAnimationCompletionBlock completionBlock;
 @property (nonatomic, strong) JDFlipNumberViewImageBundle *imageBundle;
 
-@property (nonatomic, readonly) NSArray *topImages;
-@property (nonatomic, readonly) NSArray *bottomImages;
+@property (nonatomic, strong) NSArray *topImages;
+@property (nonatomic, strong) NSArray *bottomImages;
 @property (nonatomic, readonly) CGSize imageSize;
+
+@property (nonatomic, strong) NSArray<NSArray<UIImage *> *> *digitImages;
 
 @end
 
 
 @implementation JDFlipNumberDigitView
+
+// 生成数字 0~9 的上下半部分图片数组
+//- (NSArray<NSArray<UIImage *> *> *)generateDigitImagesWithSize:(CGSize)size font:(UIFont *)font {
+//    NSMutableArray *allDigits = [NSMutableArray arrayWithCapacity:10];
+//    
+//    for (int i = 0; i <= 9; i++) {
+//        NSString *digitStr = [NSString stringWithFormat:@"%d", i];
+//        
+//        // 上半部分图片
+//        UIImage *topImage = [CALayer textToImageWithText:digitStr
+//                                                    font:font
+//                                                    size:size
+//                                                 bgColor:[UIColor redColor]
+//                                               middleGap:2
+//                                               textColor:[UIColor greenColor]];
+//        // 下半部分图片
+//        UIImage *bottomImage = [CALayer textToImageWithText:digitStr
+//                                                       font:font
+//                                                       size:size
+//                                                    bgColor:[UIColor redColor]
+//                                                  middleGap:2
+//                                                  textColor:[UIColor greenColor]];
+//        
+//        // 裁剪上下半部分
+//        CGFloat halfHeight = size.height / 2.0;
+//        CGImageRef topCgImage = CGImageCreateWithImageInRect(topImage.CGImage, CGRectMake(0, 0, size.width, halfHeight));
+//        CGImageRef bottomCgImage = CGImageCreateWithImageInRect(bottomImage.CGImage, CGRectMake(0, halfHeight, size.width, halfHeight));
+//        
+//        UIImage *topHalfImage = [UIImage imageWithCGImage:topCgImage];
+//        UIImage *bottomHalfImage = [UIImage imageWithCGImage:bottomCgImage];
+//        
+//        CGImageRelease(topCgImage);
+//        CGImageRelease(bottomCgImage);
+//        
+//        [allDigits addObject:@[topHalfImage, bottomHalfImage]];
+//    }
+//    
+//    return allDigits;
+//}
+
+// 生成数字 0~9 的上下半部分图片数组
+- (NSArray<NSArray<UIImage *> *> *)generateDigitImagesWithSize:(CGSize)size font:(UIFont *)font {
+    NSMutableArray *allDigits = [NSMutableArray arrayWithCapacity:10];
+    
+    for (int i = 0; i <= 9; i++) {
+        NSString *digitStr = [NSString stringWithFormat:@"%d", i];
+        
+        // 上半部分图片
+        UIImage *topImage = [CALayer textToImageWithText:digitStr
+                                                    font:font
+                                                    size:size
+                                                 bgColor:[UIColor redColor]
+                                               middleGap:2
+                                                textColor:[UIColor greenColor]];
+        // 下半部分图片
+        UIImage *bottomImage = [CALayer textToImageWithText:digitStr
+                                                       font:font
+                                                       size:size
+                                                    bgColor:[UIColor redColor]
+                                                  middleGap:2
+                                                   textColor:[UIColor greenColor]];
+        
+        // 裁剪上下半部分
+        CGFloat halfHeight = size.height / 2.0;
+        CGImageRef topCgImage = CGImageCreateWithImageInRect(topImage.CGImage, CGRectMake(0, 0, size.width, halfHeight));
+        CGImageRef bottomCgImage = CGImageCreateWithImageInRect(bottomImage.CGImage, CGRectMake(0, halfHeight, size.width, halfHeight));
+        
+        UIImage *topHalfImage = [UIImage imageWithCGImage:topCgImage];
+        UIImage *bottomHalfImage = [UIImage imageWithCGImage:bottomCgImage];
+        
+        CGImageRelease(topCgImage);
+        CGImageRelease(bottomCgImage);
+        
+        [allDigits addObject:@[topHalfImage, bottomHalfImage]];
+    }
+    
+    return allDigits;
+}
 
 - (instancetype)initWithImageBundle:(JDFlipNumberViewImageBundle *)imageBundle;
 {
@@ -57,40 +137,69 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
         _animationState = JDFlipAnimationStateFirstHalf;
         _animationDuration = kFlipAnimationMaximumAnimationDuration;
         
-        // images & frame
-        _imageBundle = (imageBundle == nil
-                        ? [JDFlipNumberViewImageBundle defaultImageBundle]
-                        : imageBundle);
+//        NSArray<NSArray<UIImage *> *> * imgs = [self generateDigitImagesWithSize:CGSizeMake(40, 60) font:[UIFont systemFontOfSize:10]];
+//        // 创建两个数组
+        NSMutableArray<UIImage *> *topImages = [NSMutableArray new];
+        NSMutableArray<UIImage *> *bottomImages = [NSMutableArray new];
+        
+        CGSize digitSize = CGSizeMake(40, 60); // 宽60，高100，可根据需求修改
+        UIFont *font = [UIFont boldSystemFontOfSize:40];
+        self.digitImages = [self generateDigitImagesWithSize:digitSize font:font];
+        for (NSArray<UIImage *> *pair in self.digitImages) {
+            if (pair.count == 2) {
+                [topImages addObject:pair[0]];     // 上半部分
+                [bottomImages addObject:pair[1]];  // 下半部分
+            }
+        }
+        self.topImages = topImages;
+        self.bottomImages = bottomImages;
+        
         [self setupImagesForImageBundle];
         [self initImagesAndFrames];
     }
     return self;
 }
 
+//- (void)displayDigitAtIndex:(NSInteger)index atPoint:(CGPoint)origin {
+//    if (index < 0 || index > 9) return;
+//    
+//    NSArray<UIImage *> *digitPair = self.digitImages[index];
+//    UIImage *topImage = digitPair[0];
+//    UIImage *bottomImage = digitPair[1];
+//    
+//    UIImageView *topImageView = [[UIImageView alloc] initWithImage:topImage];
+//    topImageView.frame = CGRectMake(origin.x, origin.y, topImage.size.width, topImage.size.height);
+//    [self.view addSubview:topImageView];
+//    
+//    UIImageView *bottomImageView = [[UIImageView alloc] initWithImage:bottomImage];
+//    bottomImageView.frame = CGRectMake(origin.x, origin.y + topImage.size.height, bottomImage.size.width, bottomImage.size.height);
+//    [self.view addSubview:bottomImageView];
+//}
+
 - (void)initImagesAndFrames;
 {
-	// setup image views
-	self.topImageView	 = [[UIImageView alloc] initWithImage:self.topImages[0]];
-	self.flipImageView	 = [[UIImageView alloc] initWithImage:self.topImages[0]];
-	self.bottomImageView = [[UIImageView alloc] initWithImage:self.bottomImages[0]];
+    // setup image views
+    self.topImageView	 = [[UIImageView alloc] initWithImage:self.topImages[0]];
+    self.flipImageView	 = [[UIImageView alloc] initWithImage:self.topImages[0]];
+    self.bottomImageView = [[UIImageView alloc] initWithImage:self.bottomImages[0]];
     self.flipImageView.hidden = YES;
     
     // set z positions
     self.topImageView.layer.zPosition = -1;
     self.bottomImageView.layer.zPosition = -1;
     self.flipImageView.layer.zPosition = 0;
-	
-	// add image views
-	[self addSubview:self.topImageView];
-	[self addSubview:self.bottomImageView];
-	[self addSubview:self.flipImageView];
-	
-	// setup default 3d transform
-	[self setZDistance: (self.imageSize.height*2)*3];
+    
+    // add image views
+    [self addSubview:self.topImageView];
+    [self addSubview:self.bottomImageView];
+    [self addSubview:self.flipImageView];
+    
+    // setup default 3d transform
+    [self setZDistance: (self.imageSize.height*2)*3];
     
     // setup frames
     CGSize size = self.imageSize;
-	self.bottomImageView.frame = CGRectMake(0, size.height, size.width, size.height);
+    self.bottomImageView.frame = CGRectMake(0, size.height, size.width, size.height);
     super.frame = CGRectMake(0, 0, size.width, size.height*2);
 }
 
@@ -101,32 +210,15 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
     if (_imageBundle == nil || nil == _imageBundle.imageBundlePath) {
         _imageBundle = [JDFlipNumberViewImageBundle defaultImageBundle];
     }
-
+    
     // create & set images
     self.topImageView.image	   = self.topImages[self.value];
     self.flipImageView.image   = self.topImages[self.value];
     self.bottomImageView.image = self.bottomImages[self.value];
 }
 
-- (JDFlipNumberViewImageSet *)imageSet {
-    if (_imageBundle == nil) {
-        return nil;
-    }
-
-    JDFlipNumberViewImageCache *cache = [JDFlipNumberViewImageCache sharedInstance];
-    return [cache imageSetForImageBundle:_imageBundle];
-}
-
-- (NSArray*)topImages {
-    return self.imageSet.topImages;
-}
-
-- (NSArray*)bottomImages {
-    return self.imageSet.bottomImages;
-}
-
 - (CGSize)imageSize {
-    return self.imageSet.topImages.firstObject.size;
+    return CGSizeMake(40, 30);
 }
 
 #pragma mark -
@@ -163,7 +255,7 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
 - (void)setFrame:(CGRect)rect;
 {
     rect.size = [self sizeThatFits:rect.size];
-	[super setFrame:rect];
+    [super setFrame:rect];
     
     // update imageView frames
     rect.origin = CGPointMake(0, 0);
@@ -171,22 +263,22 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
     self.topImageView.frame = rect;
     rect.origin.y += rect.size.height;
     self.bottomImageView.frame = rect;
-
+    
     // update flip imageView frame
     [self updateFlipViewFrame];
-	
+    
     // reset Z distance
-	[self setZDistance: self.frame.size.height*3];
+    [self setZDistance: self.frame.size.height*3];
 }
 
 - (void)setZDistance:(NSInteger)zDistance;
 {
     _zDistance = zDistance;
     
-	// setup 3d transform
-	CATransform3D aTransform = CATransform3DIdentity;
-	aTransform.m34 = -1.0 / zDistance;	
-	self.layer.sublayerTransform = aTransform;
+    // setup 3d transform
+    CATransform3D aTransform = CATransform3DIdentity;
+    aTransform.m34 = -1.0 / zDistance;
+    self.layer.sublayerTransform = aTransform;
 }
 
 #pragma mark value setter
@@ -201,17 +293,17 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
     // copy completion block
     self.completionBlock = completionBlock;
     
-	// save previous value
+    // save previous value
     self.previousValue = self.value;
-	NSInteger newValue = value % 10;
-
+    NSInteger newValue = value % 10;
+    
     // update animation type
     self.animationType = animationType;
-	BOOL animated = (animationType != JDFlipAnimationTypeNone);
+    BOOL animated = (animationType != JDFlipAnimationTypeNone);
     
     // save new value
     _value = newValue;
-	
+    
     [self updateImagesAnimated:animated];
 }
 
@@ -243,78 +335,78 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
 
 - (void)runAnimation;
 {
-	[self updateFlipViewFrame];
+    [self updateFlipViewFrame];
     
     BOOL isTopDown = self.animationType == JDFlipAnimationTypeTopDown;
-	
-	// setup animation
-	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
-	animation.duration	= MIN(kFlipAnimationMaximumAnimationDuration/2.0,self.animationDuration/2.0);
-	animation.delegate	= self;
-	animation.removedOnCompletion = NO;
-	animation.fillMode = kCAFillModeForwards;
     
-	// exchange images & setup animation
-	if (self.animationState == JDFlipAnimationStateFirstHalf) {
+    // setup animation
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+    animation.duration	= MIN(kFlipAnimationMaximumAnimationDuration/2.0,self.animationDuration/2.0);
+    animation.delegate	= self;
+    animation.removedOnCompletion = NO;
+    animation.fillMode = kCAFillModeForwards;
+    
+    // exchange images & setup animation
+    if (self.animationState == JDFlipAnimationStateFirstHalf) {
         // remove any old animations
         [self.flipImageView.layer removeAllAnimations];
         
-		// setup first animation half
+        // setup first animation half
         self.topImageView.image	   = self.topImages[isTopDown ? self.value : self.previousValue];
         self.flipImageView.image   = isTopDown ? self.topImages[self.previousValue] : self.bottomImages[self.previousValue];
         self.bottomImageView.image = self.bottomImages[isTopDown ? self.previousValue : self.value];
-		
+        
         animation.fromValue	= [NSValue valueWithCATransform3D:CATransform3DMakeRotation(0.0, 1, 0, 0)];
         animation.toValue   = [NSValue valueWithCATransform3D:CATransform3DMakeRotation(isTopDown ? -M_PI_2 : M_PI_2, 1, 0, 0)];
-		animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-	} else {
-		// setup second animation half
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+    } else {
+        // setup second animation half
         if (isTopDown) {
             self.flipImageView.image = self.bottomImages[self.value];
         } else {
             self.flipImageView.image = self.topImages[self.value];
         }
         
-		animation.fromValue	= [NSValue valueWithCATransform3D:CATransform3DMakeRotation(isTopDown ? M_PI_2 : -M_PI_2, 1, 0, 0)];
-		animation.toValue   = [NSValue valueWithCATransform3D:CATransform3DMakeRotation(0.0, 1, 0, 0)];
-		animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-	}
-	
-	// add/start animation
-	[self.flipImageView.layer addAnimation: animation forKey: kFlipAnimationKey];
+        animation.fromValue	= [NSValue valueWithCATransform3D:CATransform3DMakeRotation(isTopDown ? M_PI_2 : -M_PI_2, 1, 0, 0)];
+        animation.toValue   = [NSValue valueWithCATransform3D:CATransform3DMakeRotation(0.0, 1, 0, 0)];
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+    }
     
-	// show animated view
-	self.flipImageView.hidden = NO;
+    // add/start animation
+    [self.flipImageView.layer addAnimation: animation forKey: kFlipAnimationKey];
+    
+    // show animated view
+    self.flipImageView.hidden = NO;
 }
 
 - (void)animationDidStop:(CAAnimation *)theAnimation finished:(BOOL)finished
 {
-	if (!finished) {
+    if (!finished) {
         if (self.completionBlock) {
             JDDigitAnimationCompletionBlock completion = self.completionBlock;
             self.completionBlock = nil;
             completion(NO);
         }
-		return;
-	}
-	
-	if (self.animationState == JDFlipAnimationStateFirstHalf) {
-		// do second animation step
-		self.animationState = JDFlipAnimationStateSecondHalf;
-		[self runAnimation];
-	} else {
-		// reset state
-		self.animationState = JDFlipAnimationStateFirstHalf;
-		
-		// update images
+        return;
+    }
+    
+    if (self.animationState == JDFlipAnimationStateFirstHalf) {
+        // do second animation step
+        self.animationState = JDFlipAnimationStateSecondHalf;
+        [self runAnimation];
+    } else {
+        // reset state
+        self.animationState = JDFlipAnimationStateFirstHalf;
+        
+        // update images
         if(self.animationType == JDFlipAnimationTypeTopDown) {
             self.bottomImageView.image = self.bottomImages[self.value];
         } else {
             self.topImageView.image = self.topImages[self.value];
         }
-		
-		// remove old animation
-		[self.flipImageView.layer removeAnimationForKey: kFlipAnimationKey];
+        
+        // remove old animation
+        [self.flipImageView.layer removeAnimationForKey: kFlipAnimationKey];
         
         // hide animated view
         self.flipImageView.hidden = YES;
@@ -325,19 +417,19 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
             self.completionBlock = nil;
             completion(YES);
         }
-	}
+    }
 }
 
 - (void)updateFlipViewFrame;
 {
     if ((self.animationType == JDFlipAnimationTypeTopDown && self.animationState == JDFlipAnimationStateFirstHalf) ||
         (self.animationType == JDFlipAnimationTypeBottomUp && self.animationState == JDFlipAnimationStateSecondHalf)) {
-		self.flipImageView.layer.anchorPoint = CGPointMake(0.5, 1.0);
-		self.flipImageView.frame = self.topImageView.frame;
-	} else {
-		self.flipImageView.layer.anchorPoint = CGPointMake(0.5, 0.0);
-		self.flipImageView.frame = self.bottomImageView.frame;
-	}
+        self.flipImageView.layer.anchorPoint = CGPointMake(0.5, 1.0);
+        self.flipImageView.frame = self.topImageView.frame;
+    } else {
+        self.flipImageView.layer.anchorPoint = CGPointMake(0.5, 0.0);
+        self.flipImageView.frame = self.bottomImageView.frame;
+    }
 }
 
 @end

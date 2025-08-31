@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00BE30882E65004200F77DFD /* CALayer+HalfLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 00BE30872E65004200F77DFD /* CALayer+HalfLayer.m */; };
 		3EF2C5F3604F202390153747 /* Pods_FlipNumberViewExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 199DE9E33DFCB3FD8080B2DB /* Pods_FlipNumberViewExample.framework */; };
 		7E03ACE627F67FAE003984CE /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E03ACE527F67FAE003984CE /* WebKit.framework */; };
 		7E03ACE827F682E2003984CE /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7E03ACE727F682E2003984CE /* Launch Screen.storyboard */; };
@@ -43,6 +44,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		00BE30862E65004200F77DFD /* CALayer+HalfLayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CALayer+HalfLayer.h"; sourceTree = "<group>"; };
+		00BE30872E65004200F77DFD /* CALayer+HalfLayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "CALayer+HalfLayer.m"; sourceTree = "<group>"; };
 		199DE9E33DFCB3FD8080B2DB /* Pods_FlipNumberViewExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FlipNumberViewExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3399D2533811C20A63178958 /* Pods-FlipNumberViewExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FlipNumberViewExample.release.xcconfig"; path = "Target Support Files/Pods-FlipNumberViewExample/Pods-FlipNumberViewExample.release.xcconfig"; sourceTree = "<group>"; };
 		7E03ACE527F67FAE003984CE /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -161,6 +164,8 @@
 				D25D53FA15D1B97F00B791F3 /* JDFlipNumberDigitView.m */,
 				D2FDCA2A167E4CD5008FC0A6 /* JDFlipNumberView.h */,
 				D2FDCA2B167E4CD5008FC0A6 /* JDFlipNumberView.m */,
+				00BE30862E65004200F77DFD /* CALayer+HalfLayer.h */,
+				00BE30872E65004200F77DFD /* CALayer+HalfLayer.m */,
 				7E37A19228363AE000D46DE9 /* FlipNumberView.swift */,
 			);
 			path = FlipNumberView;
@@ -192,7 +197,6 @@
 				DFF1D8F2DC781ABE079F144D /* Pods-FlipNumberViewExample.debug.xcconfig */,
 				3399D2533811C20A63178958 /* Pods-FlipNumberViewExample.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -440,6 +444,7 @@
 				7E71C61C2837D542007ED577 /* JDFlipNumberViewImageCache.m in Sources */,
 				D2FDCA30167E4E1C008FC0A6 /* JDFlipNumberView.m in Sources */,
 				7E0849C328376D4A00F48ADF /* FlipClockView.swift in Sources */,
+				00BE30882E65004200F77DFD /* CALayer+HalfLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

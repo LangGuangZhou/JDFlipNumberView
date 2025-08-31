@@ -11,8 +11,8 @@
 
 typedef NS_OPTIONS(NSInteger, JDFlipAnimationType) {
     JDFlipAnimationTypeNone,
-	JDFlipAnimationTypeTopDown,
-	JDFlipAnimationTypeBottomUp
+    JDFlipAnimationTypeTopDown,
+    JDFlipAnimationTypeBottomUp
 };
 
 typedef void(^JDDigitAnimationCompletionBlock)(BOOL finished);
