@@ -77,7 +77,7 @@ typedef NS_OPTIONS(NSInteger, JDFlipAnimationState) {
 - (NSArray<UIImage *> *)textToHalfImages:(NSString *)text {
     // 1. 渲染整个 label 为 UIImage
     
-    CGFloat kRatio = UIScreen.mainScreen.bounds.size.height / UIScreen.mainScreen.bounds.size.width;
+    CGFloat kRatio = UIScreen.mainScreen.bounds.size.width / 375.0;
     CGRect frame = CGRectMake(0, 0, 18 * kRatio, 23 * kRatio);
     
     UIView *view = [UIView new];
