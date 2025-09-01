@@ -7,6 +7,7 @@
 
 @protocol JDFlipNumberViewDelegate;
 @class JDFlipNumberViewImageBundle;
+@class JDFlipNumberDigitConfig;
 
 typedef void(^JDFlipAnimationCompletionBlock)(BOOL finished);
 
@@ -37,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDigitCount:(NSInteger)digitCount;
 - (instancetype)initWithDigitCount:(NSInteger)digitCount
                          imageBundle:(JDFlipNumberViewImageBundle * _Nullable)imageBundle;
+
+- (instancetype)initWithConfig:(JDFlipNumberDigitConfig *)config;
 
 // direct value manipulation (jump to value)
 - (void)setValue:(NSInteger)newValue animated:(BOOL)animated;
@@ -71,3 +74,4 @@ NS_ASSUME_NONNULL_BEGIN
 @end;
 
 NS_ASSUME_NONNULL_END
+

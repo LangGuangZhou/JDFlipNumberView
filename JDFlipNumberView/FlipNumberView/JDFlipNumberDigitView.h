@@ -11,14 +11,25 @@
 
 typedef NS_OPTIONS(NSInteger, JDFlipAnimationType) {
     JDFlipAnimationTypeNone,
-	JDFlipAnimationTypeTopDown,
-	JDFlipAnimationTypeBottomUp
+    JDFlipAnimationTypeTopDown,
+    JDFlipAnimationTypeBottomUp
 };
 
 typedef void(^JDDigitAnimationCompletionBlock)(BOOL finished);
 
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface JDFlipNumberDigitConfig : NSObject
+
+@property (nonatomic, strong) UIColor *bgColor;
+@property (nonatomic, strong) UIColor *blockColor;
+@property (nonatomic, strong) UIColor *textColor;
+@property (nonatomic, strong) UIFont *font;
+@property (nonatomic, assign) CGFloat space;
+@property (nonatomic, assign) CGRect frame;
+
+@end
 
 @interface JDFlipNumberDigitView : UIView
 
@@ -29,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithImageBundle:(JDFlipNumberViewImageBundle * _Nullable)imageBundle;
 
+- (instancetype)initWithConfig:(JDFlipNumberDigitConfig *)config;
+
 - (void)setValueAnimated:(NSInteger)value
            animationType:(JDFlipAnimationType)animationType
               completion:(JDDigitAnimationCompletionBlock _Nullable)completionBlock;
@@ -36,3 +49,4 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
